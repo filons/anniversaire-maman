@@ -27,6 +27,7 @@ fetch('images.json').then(r=>{
 }).catch(()=>{ /* keep fallback */ });
 
 let slideIndex = 0;
+let messageIndex = 0;
 let slideTimer = null;
 let confettiInterval = null;
 let balloons = [];
@@ -46,7 +47,7 @@ const messages = [
   "Tous mes succès portent la trace de tes sacrifices et de tes prières",
   "Si je souris aujourd’hui, c’est grâce à ton amour qui m’a construit",
   "Tu es mon exemple, ma force tranquille, ma douceur éternelle",
-  "Qu’Allah te bénisse et t’accorde une longue vie remplie de joie 🤲",
+  "Que le seigneur te bénisse et t’accorde une longue vie remplie de joie 🤲",
   "Je t’aime plus que les mots ne peuvent le dire, maman ❤️"
 ];
 
@@ -74,6 +75,23 @@ function startShow(){
     setTimeout(()=> spawnBalloons(5), 1500);
     createHearts(12); 
     playMusicIfAvailable(); 
+    // show message corresponding to slide with beautiful animation
+    const msgEl = document.getElementById('slideMessage');
+    if (msgEl){
+      const idx = messageIndex % messages.length;
+      msgEl.textContent = messages[idx];
+      msgEl.style.opacity = '0';
+      msgEl.style.transform = 'translate(-50%, -50%) scale(0.9)';
+      msgEl.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out';
+
+      setTimeout(()=>{
+        msgEl.style.opacity='1';
+        msgEl.style.transform = 'translate(-50%, -50%) scale(1)';
+      }, 100);
+
+      // avancer le message pour la prochaine slide
+      messageIndex = (messageIndex + 1) % messages.length;
+    }
   }
 }
 
@@ -109,16 +127,20 @@ function showSlide(i){
     
     // show message corresponding to slide with beautiful animation
     const msgEl = document.getElementById('slideMessage');
-    if (msgEl){ 
-      msgEl.textContent = messages[i % messages.length]; 
-      msgEl.style.opacity = '0'; 
+    if (msgEl){
+      const idx = messageIndex % messages.length;
+      msgEl.textContent = messages[idx];
+      msgEl.style.opacity = '0';
       msgEl.style.transform = 'translate(-50%, -50%) scale(0.9)';
       msgEl.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out';
-      
-      setTimeout(()=>{ 
-        msgEl.style.opacity='1'; 
+
+      setTimeout(()=>{
+        msgEl.style.opacity='1';
         msgEl.style.transform = 'translate(-50%, -50%) scale(1)';
-      }, 100); 
+      }, 100);
+
+      // avancer le message pour la prochaine slide
+      messageIndex = (messageIndex + 1) % messages.length;
     }
   }, 260);
 }
