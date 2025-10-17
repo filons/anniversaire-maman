@@ -170,16 +170,77 @@ function clearBalloons(){ for (const b of balloons) b.remove(); balloons=[]; }
 function createHearts(count=12){ for (let i=0;i<count;i++){ const h=document.createElement('div'); h.className='heart'; const x=20+Math.random()*60; const y=60+Math.random()*30; h.style.left=x+'%'; h.style.top=y+'%'; const s=15+Math.random()*25; h.style.width=s+'px'; h.style.height=s+'px'; h.style.background='linear-gradient(45deg, #ff69b4, #ffb6c1)'; h.style.boxShadow='0 2px 10px rgba(255,105,180,0.4)'; heartLayer.appendChild(h); animateHeart(h); } }
 function animateHeart(h){ const dur=2200+Math.random()*1600; const start=performance.now(); const sy=parseFloat(h.style.top); function f(t){ const p=(t-start)/dur; if (p>1){ h.remove(); return } h.style.top=(sy - p*80)+'%'; h.style.opacity=(1-p).toString(); h.style.transform=`translate(-50%,-50%) scale(${1 + p*0.6}) rotate(${p*40}deg)`; requestAnimationFrame(f); } requestAnimationFrame(f); }
 
-// Audio handling: prefer built-in music.mp3; fallback to WebAudio pad
-let audioEl = new Audio('music.mp3'); audioEl.loop = true; let audioAvailable = false;
-audioEl.addEventListener('canplay', ()=>{ audioAvailable = true; });
-audioEl.addEventListener('error', ()=>{ audioAvailable = false; });
+// Audio handling: créer après interaction (meilleure compatibilité mobile)
+let audioEl = null;
+let audioAvailable = false;
+let audioCtx = null; 
+let masterGain = null;
 
-let audioCtx = null; let masterGain = null;
-function startMusicFallback(){ if (audioCtx) return; audioCtx = new (window.AudioContext||window.webkitAudioContext)(); masterGain = audioCtx.createGain(); masterGain.gain.value = 0.08; masterGain.connect(audioCtx.destination); const padOsc = audioCtx.createOscillator(); padOsc.type='sine'; const pg = audioCtx.createGain(); pg.gain.value = 0.06; padOsc.connect(pg); pg.connect(masterGain); padOsc.frequency.value = 220; padOsc.start(); const now = audioCtx.currentTime; const notes = [440, 554.37, 659.25, 880]; for (let i=0;i<32;i++){ const t = now + i*0.5; const o = audioCtx.createOscillator(); o.type='triangle'; o.frequency.value = notes[i%notes.length]; const g = audioCtx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.12, t+0.02); g.gain.exponentialRampToValueAtTime(0.0001, t+0.45); o.connect(g); g.connect(masterGain); o.start(t); o.stop(t+0.5); } }
+function ensureAudio() {
+  if (!audioEl) {
+    // URL absolue pour éviter tout souci de chemin
+    audioEl = new Audio(new URL('music.mp3', location.href).toString());
+    audioEl.loop = true;
+    audioEl.addEventListener('canplay', ()=>{ audioAvailable = true; });
+    audioEl.addEventListener('error', (e)=>{ audioAvailable = false; console.log('Audio error', e); });
+  }
+}
 
-function playMusicIfAvailable(){ if (audioAvailable) audioEl.play().catch(()=>{}); else { try{ startMusicFallback(); }catch(e){} } }
-function pauseMusic(){ if (audioAvailable) audioEl.pause(); else { if (audioCtx) audioCtx.suspend?.(); } }
+function startMusicFallback(){
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.08;
+  masterGain.connect(audioCtx.destination);
+
+  // Lit doux “pad” + petites notes (fallback)
+  const padOsc = audioCtx.createOscillator();
+  padOsc.type='sine';
+  const pg = audioCtx.createGain();
+  pg.gain.value = 0.06;
+  padOsc.connect(pg);
+  pg.connect(masterGain);
+  padOsc.frequency.value = 220;
+  padOsc.start();
+
+  const now = audioCtx.currentTime;
+  const notes = [440, 554.37, 659.25, 880];
+  for (let i=0;i<32;i++){
+    const t = now + i*0.5;
+    const o = audioCtx.createOscillator();
+    o.type='triangle';
+    o.frequency.value = notes[i%notes.length];
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.12, t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.45);
+    o.connect(g);
+    g.connect(masterGain);
+    o.start(t);
+    o.stop(t+0.5);
+  }
+}
+
+function playMusicIfAvailable(){
+  ensureAudio();
+  if (audioEl) {
+    audioEl.play().catch(()=>{ try{ startMusicFallback(); }catch(e){} });
+  } else {
+    try{ startMusicFallback(); }catch(e){}
+  }
+}
+
+function pauseMusic(){
+  if (audioEl) { audioEl.pause(); }
+  else { if (audioCtx) audioCtx.suspend?.(); }
+}
+
+// Option: déverrouiller l’audio dès le premier touch (iOS strict)
+document.addEventListener('touchstart', function unlockOnce(){
+  ensureAudio();
+  audioEl?.play().catch(()=>{ try{ startMusicFallback(); }catch(e){} });
+  document.removeEventListener('touchstart', unlockOnce);
+}, { passive: true });
 
 // Begin button
 beginBtn.addEventListener('click', ()=>{ 
