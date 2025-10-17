@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Joyeux Anniversaire Maman 💖</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+
+  <main class="container">
+    <header class="hero">
+      <h1 id="title">Joyeux Anniversaire Maman ! 🎉</h1>
+      <p id="subtitle">Une surprise remplie d'amour spécialement pour toi, ma chère maman 💕</p>
+    </header>
+
+    <section class="card">
+      <div class="left">
+        <div class="preview" id="preview">
+          <img id="mainPhoto" src="" alt="photo">
+          <div id="slideMessage" class="slideMessage" aria-hidden="true">Merci maman pour tout 💖</div>
+          <div class="placeholder" id="placeholder">Photos</div>
+        </div>
+        
+      </div>
+
+      <div class="right">
+        <div class="staticMessage">
+          <h2 id="displayName">Joyeux anniversaire, ma chère maman ! 🎂💕</h2>
+          <p id="displayMessage">Aujourd'hui, nous célébrons la plus merveilleuse des mamans. Tu es notre soleil, notre guide et notre plus grand amour. Que cette journée soit remplie de joie, de rires et de moments précieux !</p>
+        </div>
+        <div class="thumbs" id="thumbs"></div>
+      </div>
+    </section>
+
+    <footer class="footer"></footer>
+  </main>
+
+  <div id="balloonContainer" aria-hidden></div>
+  <div id="heartLayer" aria-hidden></div>
+
+  <div id="startOverlay">
+    <div class="overlayContent">
+      <h1 class="bigTitle">JOYEUX ANNIVERSAIRE MAMAN ! 💖</h1>
+      <p class="lead">Une surprise magique t'attend...</p>
+      <button id="beginBtn" class="primary">🎂 Découvrir ma surprise 🎂</button>
+      <p class="hint">Clique sur le bouton pour commencer cette journée spéciale !</p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
